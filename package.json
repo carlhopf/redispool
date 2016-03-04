@@ -1,6 +1,6 @@
 {
   "name": "redispool",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Redis pool.",
   "main": "index.js",
   "scripts": {
@@ -19,5 +19,13 @@
   "bugs": {
     "url": "https://github.com/carlhopf/redispool/issues"
   },
-  "homepage": "https://github.com/carlhopf/redispool#readme"
+  "homepage": "https://github.com/carlhopf/redispool#readme",
+  "dependencies": {
+    "async": "^1.5.2",
+    "loglevel": "^1.4.0",
+    "redis": "^2.4.2"
+  },
+  "devDependencies": {
+    "mocha": "^2.4.5"
+  }
 }

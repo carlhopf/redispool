@@ -1,2 +1,2 @@
-var Client = require('./lib/Client');
-var Pool = require('./lib/Pool');
+exports.MasterSlavePool = require('./lib/MasterSlavePool');
+exports.MasterSlaveHashPool = require('./lib/MasterSlaveHashPool');

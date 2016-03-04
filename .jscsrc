@@ -1,0 +1,13 @@
+{
+    "preset": "airbnb",
+    "requireTrailingComma": null,
+    "disallowSpacesInsideBrackets": null,
+    "disallowSpacesInsideArrayBrackets": null,
+    "requirePaddingNewLinesAfterBlocks": null,
+    "requirePaddingNewLinesBeforeLineComments": null,
+    "validateIndentation": "\t",
+    "disallowTrailingWhitespace": null,
+    "disallowEmptyBlocks": null,
+    "requireCamelCaseOrUpperCaseIdentifiers": null,
+    "requireSpacesInAnonymousFunctionExpression": null
+}

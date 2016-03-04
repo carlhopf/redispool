@@ -1,0 +1,10 @@
+{
+	"browserify": true,
+	"quotmark": "single",
+	"mocha": true,
+	"esnext": true,
+	"undef": true,
+	"sub": true,
+	"unused": true,
+	"node": true
+}

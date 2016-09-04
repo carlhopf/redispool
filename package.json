@@ -1,6 +1,6 @@
 {
   "name": "redispool",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Redis pool.",
   "main": "index.js",
   "scripts": {
@@ -23,7 +23,7 @@
   "dependencies": {
     "async": "^1.5.2",
     "loglevel": "^1.4.0",
-    "redis": "^2.6.0-2"
+    "redis": "^2.6.2"
   },
   "devDependencies": {
     "mocha": "^2.4.5"

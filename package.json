@@ -1,6 +1,6 @@
 {
   "name": "redispool",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Redis pool.",
   "main": "index.js",
   "scripts": {

@@ -2,10 +2,13 @@ const assert = require('assert');
 const q = require('q');
 const config = require('./lib/config');
 const SubHashPool = require('../lib/SubHashPool');
+const PubHashPool = require('../lib/PubHashPool');
 
 describe('subhashpool', function () {
 	var pool;
 	var channel;
+	var message;
+	var iv;
 
 	before('init', function (cb) {
 		pool = new SubHashPool({
@@ -21,8 +24,29 @@ describe('subhashpool', function () {
 		pool.init(cb);
 	});
 
+	before('init pub', function (cb) {
+		poolpub = new PubHashPool({
+			tag: 'test',
+			masters: [
+				{
+					host: config.redisHost,
+					port: config.redisPort,
+				},
+			],
+		});
+
+		poolpub.init(cb);
+	});
+
 	beforeEach('select random channel', function () {
 		channel = 'chan' + Math.random();
+		message = 'msg' + Math.random();
+	});
+
+	beforeEach('pub iv', function () {
+		iv = setInterval(function () {
+			poolpub.publish(channel, '' + Math.random());
+		}, 100);
 	});
 
 	it('subscribe, cancel', function (cb) {
@@ -75,6 +99,48 @@ describe('subhashpool', function () {
 
 		// must be invoked in nextTick
 		assert(!onready);
+	});
+
+	it('subscribe, instant cancel, subscribe', function (cb) {
+		var onready1 = false;
+		var onready2 = false;
+
+		var cancel1 = pool.subscribe(
+			channel,
+			function (json) {},
+			function (err, cancel) {
+				// must only run once
+				assert(!onready1);
+				onready1 = true;
+
+				assert.equal(err, 'subscribe cancelled');
+				assert.equal(cancel, undefined);
+			});
+
+		// instantly cancel
+		cancel1(function (err) {
+			assert.equal(err, null);
+
+			// onready1 must run before this cancel() cb
+			assert(onready1);
+		});
+
+		// must be invoked in nextTick
+		assert(!onready1);
+
+		var cancel2 = pool.subscribe(
+			channel,
+			function (json) {
+				console.log(json);
+
+			},
+			function (err, cancel) {
+				// must only run once
+				assert(!onready2);
+				onready2 = true;
+
+				assert(!err);
+			});
 	});
 
 	it('subscribe twice, cancel1 must err ready cb, cancel2 not', function (cb) {
@@ -151,5 +217,9 @@ describe('subhashpool', function () {
 
 	it.skip('subscribe and receive json', function () {
 		// TODO
+	});
+
+	afterEach(function () {
+		clearInterval(iv);
 	});
 });

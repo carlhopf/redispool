@@ -4,6 +4,11 @@ const config = require('./lib/config');
 const SubHashPool = require('../lib/SubHashPool');
 const PubHashPool = require('../lib/PubHashPool');
 
+const all = function (deferreds, cb) {
+	q.all(Object.keys(deferreds).map((key) => deferreds[key].promise))
+		.then(() => cb(null), (err) => cb(err));
+};
+
 describe('subhashpool', function () {
 	var pool;
 	var channel;
@@ -26,7 +31,6 @@ describe('subhashpool', function () {
 
 	before('init pub', function (cb) {
 		poolpub = new PubHashPool({
-			tag: 'test',
 			masters: [
 				{
 					host: config.redisHost,
@@ -43,18 +47,33 @@ describe('subhashpool', function () {
 		message = 'msg' + Math.random();
 	});
 
-	beforeEach('pub iv', function () {
-		iv = setInterval(function () {
-			poolpub.publish(channel, '' + Math.random());
-		}, 100);
-	});
-
-	it('subscribe, cancel', function (cb) {
+	it('subscribe, publish, onjson, cancel', function (cb) {
 		var onready = false;
+		var json = { foo: 'bar' + Math.random() };
 
-		pool.subscribe(
+		var def = {
+			cancel: q.defer(),
+			json: q.defer(),
+		};
+
+		all(def, cb);
+
+		var cancel = pool.subscribe(
 			channel,
-			function (json) {},
+			function (_json) {
+				assert.equal(typeof _json, 'object');
+				assert.notEqual(json, _json);
+				assert.equal(JSON.stringify(json), JSON.stringify(_json));
+
+				def.json.resolve(true);
+
+				cancel(function (err) {
+					assert(!err);
+
+					// TODO assert client no longer subscribed to channel
+					def.cancel.resolve(true);
+				});
+			},
 			function (err, cancel) {
 				// must only run once
 				assert(!onready);
@@ -63,12 +82,7 @@ describe('subhashpool', function () {
 				assert.equal(err, null);
 				assert.equal(typeof cancel, 'function');
 
-				cancel(function (err) {
-					assert(!err);
-
-					// TODO assert client no longer subscribed to channel
-					cb(null);
-				});
+				poolpub.publish(channel, json);
 			});
 	});
 
@@ -105,6 +119,13 @@ describe('subhashpool', function () {
 		var onready1 = false;
 		var onready2 = false;
 
+		var def = {
+			cancel1: q.defer(),
+			cancel2: q.defer(),
+		};
+
+		all(def, cb);
+
 		var cancel1 = pool.subscribe(
 			channel,
 			function (json) {},
@@ -123,6 +144,8 @@ describe('subhashpool', function () {
 
 			// onready1 must run before this cancel() cb
 			assert(onready1);
+
+			def.cancel1.resolve(true);
 		});
 
 		// must be invoked in nextTick
@@ -131,7 +154,6 @@ describe('subhashpool', function () {
 		var cancel2 = pool.subscribe(
 			channel,
 			function (json) {
-				console.log(json);
 
 			},
 			function (err, cancel) {
@@ -140,6 +162,8 @@ describe('subhashpool', function () {
 				onready2 = true;
 
 				assert(!err);
+
+				def.cancel2.resolve(true);
 			});
 	});
 
@@ -147,13 +171,12 @@ describe('subhashpool', function () {
 		var readyCb1 = false;
 		var readyCb2 = false;
 
-		var deferredCancel1 = q.defer();
-		var deferredCancel2 = q.defer();
+		var def = {
+			cancel1: q.defer(),
+			cancel2: q.defer(),
+		};
 
-		q.all([
-			deferredCancel1.promise,
-			deferredCancel2.promise,
-		]).then(() => cb(null));
+		all(def, cb);
 
 		var cancel1 = pool.subscribe(
 			channel,
@@ -173,7 +196,7 @@ describe('subhashpool', function () {
 				readyCb2 = true;
 
 				cancel2(function (err) {
-					deferredCancel2.resolve(true);
+					def.cancel2.resolve(true);
 				});
 			});
 
@@ -182,14 +205,14 @@ describe('subhashpool', function () {
 		cancel1(function (err) {
 			assert.equal(err, null);
 			assert(readyCb1);
-			deferredCancel1.resolve(true);
+			def.cancel1.resolve(true);
 		});
 
 		assert(!readyCb1);
 		assert(!readyCb2);
 	});
 
-	it('cancel multiple times', function () {
+	it('cancel multiple times', function (cb) {
 		// TODO behaviour for second call?
 		// - exec 2nd cancel callback after 1st cancel callback (queue)
 		// - never exec callback
@@ -217,9 +240,5 @@ describe('subhashpool', function () {
 
 	it.skip('subscribe and receive json', function () {
 		// TODO
-	});
-
-	afterEach(function () {
-		clearInterval(iv);
 	});
 });

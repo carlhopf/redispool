@@ -60,8 +60,9 @@ describe('subhashpool', function () {
 
 		var cancel = pool.subscribe(
 			channel,
-			function (_json) {
+			function (_channel, _json) {
 				assert.equal(typeof _json, 'object');
+				assert.equal(_channel, channel);
 				assert.notEqual(json, _json);
 				assert.equal(JSON.stringify(json), JSON.stringify(_json));
 

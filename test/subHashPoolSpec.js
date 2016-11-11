@@ -1,6 +1,7 @@
 const assert = require('assert');
 const q = require('q');
 const config = require('./lib/config');
+const redis = require('./lib/redis');
 const SubHashPool = require('../lib/SubHashPool');
 const PubHashPool = require('../lib/PubHashPool');
 
@@ -11,17 +12,23 @@ const all = function (deferreds, cb) {
 
 describe('subhashpool', function () {
 	var pool;
+	var poolpub;
 	var channel;
 	var message;
 	var iv;
+
+	before('start redis', function (cb) {
+		this.timeout(3 * 60 * 1000);
+		redis.start(cb);
+	});
 
 	before('init', function (cb) {
 		pool = new SubHashPool({
 			tag: 'test',
 			masters: [
 				{
-					host: config.redisHost,
-					port: config.redisPort,
+					host: '127.0.0.1',
+					port: redis.PORT,
 				},
 			],
 		});
@@ -33,8 +40,8 @@ describe('subhashpool', function () {
 		poolpub = new PubHashPool({
 			masters: [
 				{
-					host: config.redisHost,
-					port: config.redisPort,
+					host: '127.0.0.1',
+					port: redis.PORT,
 				},
 			],
 		});
@@ -241,5 +248,9 @@ describe('subhashpool', function () {
 
 	it.skip('subscribe and receive json', function () {
 		// TODO
+	});
+
+	after('stop redis', function (cb) {
+		redis.stop(cb);
 	});
 });

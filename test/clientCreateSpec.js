@@ -1,20 +1,26 @@
 const assert = require('assert');
 const q = require('q');
 const config = require('./lib/config');
+const redis = require('./lib/redis');
 const Client = require('../lib/Client');
 
 describe('client', function () {
 	var options = {
-		host: config.redisHost,
-		port: config.redisPort,
+		host: '127.0.0.1',
+		port: redis.PORT,
 	};
 
 	var optionsInvalid = {
-		host: config.redisHost,
+		host: '127.0.0.1',
 		port: 12355,
 		times: 2,
 		interval: 100,
 	};
+
+	before('start redis', function (cb) {
+		this.timeout(3 * 60 * 1000);
+		redis.start(cb);
+	});
 
 	it('create new', function (cb) {
 		Client.retryCreate(options, function (err, client) {
@@ -30,5 +36,9 @@ describe('client', function () {
 			assert.equal(0, err.indexOf('connection end/lost'));
 			cb(null);
 		});
+	});
+
+	after('stop redis', function (cb) {
+		redis.stop(cb);
 	});
 });

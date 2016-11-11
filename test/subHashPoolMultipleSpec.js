@@ -2,6 +2,7 @@ const async = require('async');
 const assert = require('assert');
 const q = require('q');
 const config = require('./lib/config');
+const redis = require('./lib/redis');
 const SubHashPool = require('../lib/SubHashPool');
 
 describe('subhashpool multiple', function () {
@@ -9,13 +10,18 @@ describe('subhashpool multiple', function () {
 	var channel;
 	var cancels;
 
+	before('start redis', function (cb) {
+		this.timeout(3 * 60 * 1000);
+		redis.start(cb);
+	});
+
 	before('init', function (cb) {
 		pool = new SubHashPool({
 			tag: 'test',
 			masters: [
 				{
-					host: config.redisHost,
-					port: config.redisPort,
+					host: '127.0.0.1',
+					port: redis.PORT,
 				},
 			],
 		});
@@ -93,5 +99,9 @@ describe('subhashpool multiple', function () {
 		async.map(cancels, (cancel, cb) => {
 			cancel(cb);
 		}, cb);
+	});
+
+	after('stop', function (cb) {
+		redis.stop(cb);
 	});
 });

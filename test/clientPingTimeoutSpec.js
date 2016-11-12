@@ -10,16 +10,29 @@ describe('client', function () {
 		port: redis.PORT,
 	};
 
+	var client;
+
 	before('start redis', function (cb) {
 		this.timeout(3 * 60 * 1000);
 		redis.start(cb);
 	});
 
-	it('create new', function (cb) {
-		Client.retryCreate(options, function (err, client) {
-			assert(client);
+	beforeEach('create new', function (cb) {
+		Client.retryCreate(options, function (err, _client) {
+			assert(_client);
+			client = _client;
 			cb(err);
 		});
+	});
+
+	it('ping timeout', function (cb) {
+
+
+		client.once('ready', function () {
+			cb(null);
+		});
+
+		client._pingTimeout();
 	});
 
 	after('stop redis', function (cb) {

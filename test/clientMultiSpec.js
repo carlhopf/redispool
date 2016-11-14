@@ -36,8 +36,9 @@ describe('client', function () {
 
 		multi.randomkey();
 
-		multi.exec(function (err) {
+		multi.exec(function (err, res) {
 			assert(ontook);
+			assert.equal(res.length, 1);
 			cb(err);
 		});
 	});

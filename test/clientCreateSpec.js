@@ -16,6 +16,14 @@ describe('client', function () {
 	});
 
 	it('create new', function (cb) {
+		Client.create(options, function (err, client) {
+			console.log(err);
+			assert(client);
+			cb(err);
+		});
+	});
+
+	it('create new', function (cb) {
 		Client.retryCreate(options, function (err, client) {
 			assert(client);
 			cb(err);

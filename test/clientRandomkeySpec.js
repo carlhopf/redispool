@@ -3,6 +3,7 @@ const q = require('q');
 const config = require('./lib/config');
 const redis = require('./lib/redis');
 const Client = require('../lib/Client');
+const index = require('../index');
 
 describe('client', function () {
 	var options = {
@@ -28,7 +29,7 @@ describe('client', function () {
 	it('run randomkey, emit took before cb', function (cb) {
 		var ontook = false;
 
-		client.once('took', function () {
+		index.tracker.once('took', function () {
 			ontook = true;
 		});
 
@@ -39,7 +40,7 @@ describe('client', function () {
 	});
 
 	it('run randomkey, must emit took without cb', function (cb) {
-		client.once('took', function () {
+		index.tracker.once('took', function () {
 			cb(null);
 		});
 

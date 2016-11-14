@@ -3,6 +3,7 @@ const q = require('q');
 const config = require('./lib/config');
 const redis = require('./lib/redis');
 const Client = require('../lib/Client');
+const index = require('../index');
 
 describe('client', function () {
 	var options = {
@@ -29,7 +30,7 @@ describe('client', function () {
 		var multi = client.multi();
 		var ontook = false;
 
-		client.once('took', function () {
+		index.tracker.once('took', function () {
 			ontook = true;
 		});
 
@@ -44,7 +45,7 @@ describe('client', function () {
 	it('run multi, must emit took without cb', function (cb) {
 		var multi = client.multi();
 
-		client.once('took', function () {
+		index.tracker.once('took', function () {
 			cb(null);
 		});
 
